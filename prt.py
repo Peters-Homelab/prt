@@ -181,5 +181,23 @@ def run_pool(conf, usr_cmd, print_out):
                     print(z)
                 print()
 
+parser = argparse.ArgumentParser(description="A tool for running commands in parallel across multiple remote hosts.")
+parser.add_argument("-c", "--command", metavar='REMOTE COMMAND',
+                    help="Print the output from each successful command.")
+parser.add_argument("-p", "--pool", metavar='POOL_YAML',
+                    help="Select the pool yaml file you want to use.")
+parser.add_argument("-d", "--display_output", action='store_true',
+                    help="Display the output from the command run on each remote host.")
+parser.add_argument("-v", "--version", action='store_true',
+                    help="Display PRT's version information.")
+args = parser.parse_args()
 
-run_pool('xe', 'cat /etc/*release', True)
+if args.version:
+    print('PRT Version: 1.0.0')
+
+if args.command:
+    if args.pool:
+        run_pool(args.pool, args.command, args.display_output)
+    else:
+        print('Error: No Pool Defined for Command to Run On!')
+
