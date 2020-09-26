@@ -6,6 +6,8 @@ import paf
 import yaml
 import paramiko
 import argparse
+import itertools
+import multiprocessing as mp
 from pathlib import Path
 
 
@@ -21,7 +23,7 @@ def read_hosts_yaml(conf):
     with open(conf_path) as file:
         hosts = yaml.full_load(file)
 
-    mand = {'NAME', 'USER', 'IP', 'PORT', 'BAD'}
+    mand = {'NAME', 'USER', 'IP', 'PORT'}
     error = 0
 
     for host in hosts:
@@ -31,6 +33,7 @@ def read_hosts_yaml(conf):
                 print('Error: Host ' + host + ' Is Missing The Field "' + val + '"!')
                 error += 1
     if error == 0:
+        print('Successfully Loaded Pool of Hosts')
         return hosts
     else:
         print('')
@@ -49,7 +52,7 @@ def gen_prt_key():
         os.makedirs(base)
 
     if os.path.exists(key_path):
-        print('PRT Key Found')
+        print('PRT Pool Key Found')
         return
 
     else:
@@ -68,7 +71,8 @@ def gen_prt_key():
 
 
 def run_on_host(con_info, command):
-    ''' '''
+    """
+    """
     base = str(str(Path.home()) + '/.prt/')
     # Paramiko client configuration
     paramiko.util.log_to_file(base + "prt_paramiko.log")
@@ -82,25 +86,27 @@ def run_on_host(con_info, command):
 
         if not UseGSSAPI and not DoGSSAPIKeyExchange:
             client.connect(
-                con_info['IP'],
-                port=con_info['PORT'],
-                username=con_info['USER'],
+                con_info[1]['IP'],
+                port=con_info[1]['PORT'],
+                username=con_info[1]['USER'],
                 key_filename=str(base + 'prt_rsa.key')
             )
 
         else:
             client.connect(
-                con_info['IP'],
-                port=con_info['PORT'],
+                con_info[1]['IP'],
+                port=con_info[1]['PORT'],
                 username=con_info['USER'],
                 key_filename=str(Path.home()) + 'prt_rsa.key',
                 gss_auth=UseGSSAPI,
                 gss_kex=DoGSSAPIKeyExchange,
             )
 
-        con_status = str('Connection Success')
+        con_status = str('Connection Succeeded')
         stdin, stdout, stderr = client.exec_command(command)
         results_dict = {
+            'name': con_info[0],
+            'uname': con_info[1]['NAME'],
             'status': con_status,
             'stdout': [x.replace('\n', '') for x in stdout.readlines()],
             'stderr': [x.replace('\n', '') for x in stderr.readlines()]
@@ -108,11 +114,13 @@ def run_on_host(con_info, command):
         client.close()
 
     except Exception as error:
-        con_status = str("Connection Error: PRT Caught exception( %s: %s" % (error.__class__, error) + ' )')
+        con_status = str("Connection Failed : PRT Caught exception(%s: %s" % (error.__class__, error) + ')')
         results_dict = {
+            'name': con_info[0],
+            'uname': con_info[1]['NAME'],
             'status': con_status,
-            'stdout': 'NONE',
-            'stderr': 'NONE'
+            'stdout': [],
+            'stderr': []
         }
         try:
             client.close()
@@ -122,10 +130,56 @@ def run_on_host(con_info, command):
     return results_dict
 
 
-def run_pool(conf, usr_cmd):
-    ''' '''
+def run_pool(conf, usr_cmd, print_out):
+    """
+    """
+    # Setup for Connection
     hosts = read_hosts_yaml(conf)
+    gen_prt_key()
+
+    # Run a Pool of Threads for Each Connection
+    print('Starting Parallel Connection Pool For ' + str(len(hosts)) + ' Remote Hosts...')
+    x = [(k, v) for k, v in hosts.items()]
+    with mp.Pool(processes=len(hosts)) as pool:
+        mp_out = pool.starmap(run_on_host, zip(x, itertools.repeat(usr_cmd)))
+
+    # Print Results for User
+    umax = max(len(z['uname']) for z in mp_out)
+    cmax = max(len((' ').join(str(z['status']).split(' ')[:2])) for z in mp_out)
+    print()
+
+    for x in mp_out:
+        cstat = (' ').join(str(x['status']).split(' ')[:2])
+        pad1 = ' '*(umax - len(x['uname']))
+        pad2 = ' '*(cmax - len(cstat))
+
+        if x['stderr']:
+            cmd = 'Command Returned An Error'
+        elif x['stdout']:
+            cmd = 'Command Ran Successfully'
+        else:
+            cmd = 'Command Returned NO Output'
+
+        out = x['uname'] + ':  ' + pad1 + cstat + '  ' + pad2 + cmd
+        print(out)
+
+    # Output Results File
+    print()
+    if print_out is True:
+        if any(x['stdout'] for x in mp_out):
+            nmax = max(len(z) for z in x['stdout'] for x in mp_out)
+            nmin = min(len(z) for z in x['stdout'] for x in mp_out)
+            pad = round((nmax - nmin)/2)
+            if pad < 5:
+                pad = 5
+
+        for x in mp_out:
+            if x['stdout']:
+                print('='*pad + ' ' + x['uname'] + ' ' + '='*pad)
+                print()
+                for z in x['stdout']:
+                    print(z)
+                print()
 
 
-
-
+run_pool('xe', 'cat /etc/*release', True)
