@@ -1,21 +1,26 @@
 #!/usr/bin/env python3
 
+# Core Modules
+import re
 import os
 import sys
-import paf
-import yaml
-import paramiko
 import argparse
 import itertools
 import multiprocessing as mp
 from pathlib import Path
+
+# External Modules
+import paf
+import yaml
+import paramiko
+
+base = str(str(Path.home()) + '/.prt/')
 
 
 def read_hosts_yaml(conf):
     """
     Read and parse yaml file containing a pool of remote hosts.
     """
-    base = str(str(Path.home()) + '/.prt/')
     conf_path = str(base + paf.escape_bash_input(conf) + '.yaml')
     if not os.path.exists(conf_path):
         sys.exit('Error: No Config File Named "' + conf + '" Found in "' + base + '"!')
@@ -44,7 +49,6 @@ def gen_prt_key():
     """
     Generate public and private keys for PRT.
     """
-    base = str(str(Path.home()) + '/.prt/')
     key_path = base + 'prt_rsa.key'
     pub_path = base + 'prt_rsa.pub'
 
@@ -73,7 +77,6 @@ def gen_prt_key():
 def run_on_host(con_info, command):
     """
     """
-    base = str(str(Path.home()) + '/.prt/')
     # Paramiko client configuration
     paramiko.util.log_to_file(base + "prt_paramiko.log")
     UseGSSAPI = (paramiko.GSS_AUTH_AVAILABLE)
@@ -130,15 +133,24 @@ def run_on_host(con_info, command):
     return results_dict
 
 
-def run_pool(conf, usr_cmd, print_out):
+def run_pool(conf, usr_cmd):
     """
     """
-    # Setup for Connection
+    ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
+    out_file = base + conf + '_output.txt'
+
+    def parse_line(line):
+        with open(out_file, 'a') as f:
+            f.write("%s\n" % ansi_escape.sub('', line))
+
+    # Setup for Connections
     hosts = read_hosts_yaml(conf)
     gen_prt_key()
+    paf.start_log('Pool "' + conf + '"', out_file)
+    parse_line('')
 
     # Run a Pool of Threads for Each Connection
-    print('Starting Parallel Connection Pool For ' + str(len(hosts)) + ' Remote Hosts...')
+    print('Starting Pool of ' + str(len(hosts)) + ' Parallel Connections...')
     x = [(k, v) for k, v in hosts.items()]
     with mp.Pool(processes=len(hosts)) as pool:
         mp_out = pool.starmap(run_on_host, zip(x, itertools.repeat(usr_cmd)))
@@ -148,6 +160,7 @@ def run_pool(conf, usr_cmd, print_out):
     cmax = max(len((' ').join(str(z['status']).split(' ')[:2])) for z in mp_out)
     print()
 
+    # Create Summary
     for x in mp_out:
         cstat = (' ').join(str(x['status']).split(' ')[:2])
         pad1 = ' '*(umax - len(x['uname']))
@@ -162,32 +175,49 @@ def run_pool(conf, usr_cmd, print_out):
 
         out = x['uname'] + ':  ' + pad1 + cstat + '  ' + pad2 + cmd
         print(out)
+        parse_line(out)
 
-    # Output Results File
-    print()
-    if print_out is True:
-        if any(x['stdout'] for x in mp_out):
-            nmax = max(len(z) for z in x['stdout'] for x in mp_out)
-            nmin = min(len(z) for z in x['stdout'] for x in mp_out)
-            pad = round((nmax - nmin)/2)
-            if pad < 5:
-                pad = 5
+    lens = set()
+    for x in mp_out:
+        for z in x['stdout']:
+            lens.add(len(ansi_escape.sub('', z)))
+        for r in x['stderr']:
+            lens.add(len(ansi_escape.sub('', r)))
 
-        for x in mp_out:
-            if x['stdout']:
-                print('='*pad + ' ' + x['uname'] + ' ' + '='*pad)
-                print()
-                for z in x['stdout']:
-                    print(z)
-                print()
+    lmax = max(lens)
+    lmin = min(lens)
+    pad = round((lmax - lmin)/2)
+    if pad < 10:
+        pad = 10
+
+    for x in mp_out:
+        if x['stdout']:
+            out = ('\n' + '='*pad + ' ' + x['uname'] + ' ' + '='*pad + '\n')
+            print(out)
+            parse_line(out)
+            for z in x['stdout']:
+                print(z)
+                parse_line(z)
+
+        if x['stderr']:
+            out = ('\n' + '='*pad + ' ' + x['uname'] + ' ' + '='*pad + '\n')
+            print(out)
+            parse_line(out)
+            for z in x['stderr']:
+                print(z)
+                parse_line(z)
+
+    parse_line('')
+    paf.end_log('Pool "' + conf + '"', out_file)
+    print('')
+    print('Output Is Stored In ' + out_file)
+
 
 parser = argparse.ArgumentParser(description="A tool for running commands in parallel across multiple remote hosts.")
 parser.add_argument("-c", "--command", metavar='REMOTE COMMAND',
                     help="Print the output from each successful command.")
 parser.add_argument("-p", "--pool", metavar='POOL_YAML',
                     help="Select the pool yaml file you want to use.")
-parser.add_argument("-d", "--display_output", action='store_true',
-                    help="Display the output from the command run on each remote host.")
 parser.add_argument("-v", "--version", action='store_true',
                     help="Display PRT's version information.")
 args = parser.parse_args()
@@ -197,7 +227,6 @@ if args.version:
 
 if args.command:
     if args.pool:
-        run_pool(args.pool, args.command, args.display_output)
+        run_pool(args.pool, args.command)
     else:
         print('Error: No Pool Defined for Command to Run On!')
-
