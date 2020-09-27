@@ -135,6 +135,7 @@ def run_on_host(con_info, command):
 
 def run_pool(conf, usr_cmd):
     """
+    Runs a Pool of Commands and returns the results to user.
     """
     ansi_escape = re.compile(r'\x1B(?:[@-Z\\-_]|\[[0-?]*[ -/]*[@-~])')
     out_file = base + conf + '_output.txt'
@@ -177,6 +178,7 @@ def run_pool(conf, usr_cmd):
         print(out)
         parse_line(out)
 
+    # Determines How Wide to Make Bars
     lens = set()
     for x in mp_out:
         for z in x['stdout']:
@@ -190,6 +192,7 @@ def run_pool(conf, usr_cmd):
     if pad < 10:
         pad = 10
 
+    # Print the Actual Output
     for x in mp_out:
         if x['stdout']:
             out = ('\n' + '='*pad + ' ' + x['uname'] + ' ' + '='*pad + '\n')
@@ -207,13 +210,23 @@ def run_pool(conf, usr_cmd):
                 print(z)
                 parse_line(z)
 
+        if x['status'].startswith('Connection Failed'):
+            out = ('\n' + '='*pad + ' ' + x['uname'] + ' ' + '='*pad + '\n')
+            print(out)
+            parse_line(out)
+            print(x['status'])
+            parse_line(x['status'])
+
+
     parse_line('')
     paf.end_log('Pool "' + conf + '"', out_file)
     print('')
     print('Output Is Stored In ' + out_file)
 
 
+# Argument Parser
 parser = argparse.ArgumentParser(description="A tool for running commands in parallel across multiple remote hosts.")
+
 parser.add_argument("-c", "--command", metavar='REMOTE COMMAND',
                     help="Print the output from each successful command.")
 parser.add_argument("-p", "--pool", metavar='POOL_YAML',
@@ -222,6 +235,7 @@ parser.add_argument("-v", "--version", action='store_true',
                     help="Display PRT's version information.")
 args = parser.parse_args()
 
+# Process Arguments
 if args.version:
     print('PRT Version: 1.0.0')
 
