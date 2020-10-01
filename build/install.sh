@@ -14,7 +14,7 @@ elif [[ $osname == 'centos' ]] || [[ $osname == 'fedora' ]]; then
 ## ARCH
 elif [[ $osname == 'arch' ]] || [[ $osname == 'manjaro' ]]; then
   # Install Dependencies
-  pacman -S --noconfirm --needed python python-yaml python3-paramiko
+  pacman -S --noconfirm --needed python python-yaml python-paramiko
 
 ## NOT SUPPORTED
 else
