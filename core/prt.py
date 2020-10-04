@@ -186,10 +186,14 @@ def run_pool(conf, usr_cmd):
         for r in x['stderr']:
             lens.add(len(ansi_escape.sub('', r)))
 
-    lmax = max(lens)
-    lmin = min(lens)
-    pad = round((lmax - lmin)/2)
-    if pad < 10:
+    if lens:
+        lmax = max(lens)
+        lmin = min(lens)
+        pad = round((lmax - lmin)/2)
+
+        if pad < 10:
+            pad = 10
+    else:
         pad = 10
 
     # Print the Actual Output
