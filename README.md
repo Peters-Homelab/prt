@@ -18,4 +18,4 @@ Once you have installed PRT, you will need to set up you connection pools and re
 4. Add your newly created RSA.pub key to each of your remote hosts `~/.ssh/authorized_keys` file.
 5. You are now fully setup!
 
-![Demo Gif](https://i.imgur.com/tJpVLu0.gif)
+![Demo Gif](https://i.imgur.com/yWGZYZL.gif)
