@@ -12,9 +12,9 @@ To install PRT simply use the install script:
 curl https://raw.githubusercontent.com/JustinTimperio/prt/master/build/install.sh | sudo bash
 ```
 Once you have installed PRT, you will need to set up you connection pools and remote access keys.
-1. Create a list of yaml file containing a entry for each remote host. You can find an [example config here](https://github.com/JustinTimperio/prt/blob/master/build/example.yaml) 
+1. Create a yaml file containing an entry for each remote host. You can find an [example config here](https://github.com/JustinTimperio/prt/blob/master/build/example.yaml) 
 2. Place your newly created yaml file in `~/.prt`. (This directory won't exist by default)
-3. Run PRT with your yaml file. `prt -p your_yaml -c your_command` This will trigger the creation of a new RSA key that will be used for all your pools
+3. Run PRT with your yaml file. `prt -p pool_name -c "remote command here"` This will trigger the creation of a new RSA key that will be used for all your pools
 4. Add your newly created RSA.pub key to each of your remote hosts `~/.ssh/authorized_keys` file.
 5. You are now fully setup!
 
