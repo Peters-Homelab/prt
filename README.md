@@ -3,7 +3,7 @@
 Excute the same command across multiple remote hosts in parallel.
 
 ## Abstract
-In an attempt to streamline the development process across multiple distributions, PRT was created to make testing various scripts and binaries much faster and more intuitive. PRT lets a user define multiple pools of remote hosts and sends them the same commands in parrallel. PRT is written 100% in python3 and make no external calls your hosts ssh package.
+In an attempt to streamline my own development process across multiple distributions, PRT was created to make testing shell scripts and binaries much faster and more intuitive. PRT lets a user define arbitrary pools of remote hosts, making it simple to brick sets of remote hosts into any number of abstraction layers (For instance grouping all Debian based systems into a pool). PRT is written 100% in python3 and makes no external calls your hosts ssh package.
 
 
 ## Install
