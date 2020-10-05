@@ -7,7 +7,7 @@ In an attempt to streamline my own development process across multiple distribut
 
 
 ## Install
-To install PRT simply use the install script:
+To install PRT:
 ```bash
 curl https://raw.githubusercontent.com/JustinTimperio/prt/master/build/install.sh | sudo bash
 ```
