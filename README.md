@@ -13,17 +13,16 @@ curl https://raw.githubusercontent.com/JustinTimperio/prt/master/build/install.s
 ```
 Once you have installed PRT, you will need to set up your connection pool files and remote access keys.
 
-1. Create a yaml file containing an entry for each remote host. You can find an [example config here](https://github.com/JustinTimperio/prt/blob/master/build/example.yaml) 
-2. Place your newly created yaml file in `~/.prt` (This directory won't exist by default)
-3. Run `prt -key_gen` to trigger the creation an RSA key that will be used for all your pools.
-4. Add your newly created `~/.prt/prt_rsa.pub` key to each of your remote hosts `~/.ssh/authorized_keys` file.
+1. Run `prt --key_gen` to trigger the creation an RSA key that will be used to connect to the host in all your pools.
+2. Create a yaml file containing an entry for each remote host in `~/.prt`. You can find an [example config here](https://github.com/JustinTimperio/prt/blob/master/build/example.yaml) 
+3. Add your newly created `~/.prt/prt_rsa.pub` key to each of your remote hosts `~/.ssh/authorized_keys` file.
 
 
 ## Usage
 
 - `-c, --command`: Defines the command you want to run on each remote host.
 - `-p, --pool`: Spesifies the connection pool you want run on. (~/.prt/your_pool.yaml)
-- `-key_gen`: Triggers the generation of a new universal PRT RSA key.
+- `-k, --key_gen`: Triggers the generation of a universal PRT RSA key.
 
 
 Example Command:

@@ -76,6 +76,7 @@ def gen_prt_key():
 
 def run_on_host(con_info, command):
     """
+    Runs a command on a target pool of host defined in a hosts.yaml file.
     """
     # Paramiko client configuration
     paramiko.util.log_to_file(base + "prt_paramiko.log")
@@ -193,6 +194,8 @@ def run_pool(conf, usr_cmd):
 
         if pad < 10:
             pad = 10
+        elif pad > 100:
+            pad = 100
     else:
         pad = 10
 
@@ -221,7 +224,6 @@ def run_pool(conf, usr_cmd):
             print(x['status'])
             parse_line(x['status'])
 
-
     parse_line('')
     paf.end_log('Pool "' + conf + '"', out_file)
     print('')
@@ -235,6 +237,8 @@ parser.add_argument("-c", "--command", metavar='REMOTE COMMAND',
                     help="Print the output from each successful command.")
 parser.add_argument("-p", "--pool", metavar='POOL_YAML',
                     help="Select the pool yaml file you want to use.")
+parser.add_argument("-k", "--key_gen", action='store_true',
+                    help="Display PRT's version information.")
 parser.add_argument("-v", "--version", action='store_true',
                     help="Display PRT's version information.")
 args = parser.parse_args()
@@ -242,6 +246,9 @@ args = parser.parse_args()
 # Process Arguments
 if args.version:
     print('PRT Version: 1.0.0')
+
+if args.key_gen:
+    gen_prt_key()
 
 if args.command:
     if args.pool:
