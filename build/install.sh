@@ -22,7 +22,7 @@ else
   exit
 fi
 
-sudo git clone --recurse-submodules https://github.com/JustinTimperio/prt.git /opt/prt
+sudo git clone --recurse-submodules https://git.peters-homelab.com/Peters-Homelab/prt.git /opt/prt
 sudo ln -sf /opt/prt/core/prt.py /usr/bin/prt
 
 echo ''
