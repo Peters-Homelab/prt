@@ -5,11 +5,10 @@ CentOS:
   PORT: "22"
 
 Debian: 
-  NAME: "Debain 10"
+  NAME: "Debian 10"
   IP:   "192.168.0.000"
   USER: "username"
   PORT: "22"
-  
 
 Arch:
   NAME: "Arch Linux"
@@ -17,27 +16,23 @@ Arch:
   USER: "username"
   PORT: "22"
 
-
 OpenSUSE:
   NAME: "OpenSUSE LEAP 15.2"
   IP:   "192.168.0.000"
   USER: "username"
   PORT: "22"
 
-  
 FreeBSD:
   NAME: "FreeBSD 12.2"
   IP:   "192.168.0.000"
   USER: "username"
   PORT: "22"
-  
-  
+
 Ubuntu:
   NAME: "Ubuntu 20.04"
   IP:   "192.168.0.000"
   USER: "username"
   PORT: "22"
-
 
 Alpine:
   NAME: "Alpine 3.11"
