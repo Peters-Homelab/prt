@@ -9,12 +9,12 @@ In an attempt to streamline my own development process across multiple distribut
 ## Install
 To install PRT:
 ```bash
-curl https://git.peters-homelab.com/Peters-Homelab/prt/raw/branch/master/build/install.sh | sudo bash
+curl https://raw.githubusercontent.com/Peters-Homelab/prt/master/build/install.sh | sudo bash
 ```
 Once you have installed PRT, you will need to set up your connection pool files and remote access keys.
 
 1. Run `prt --key_gen` to trigger the creation an RSA key that will be used to connect to the host in all your pools.
-2. Create a yaml file containing an entry for each remote host in `~/.prt`. You can find an [example config here](https://git.peters-homelab.com/Peters-Homelab/prt/src/branch/master/build/example.yaml) 
+2. Create a yaml file containing an entry for each remote host in `~/.prt`. You can find an [example config here](https://github.com/Peters-Homelab/prt/blob/master/build/example.yaml) 
 3. Add your newly created `~/.prt/prt_rsa.pub` key to each of your remote hosts `~/.ssh/authorized_keys` file.
 
 
